@@ -10,7 +10,7 @@ local __class = {
         assert(name, "Needs define name of Class")
         return setmetatable({
             type = name,
-            new = self.new,
+            new = self.new
         }, self)
     end,
     new = function(self, obj)
@@ -22,14 +22,16 @@ local __class = {
             end
         end
         return obj
-    end,
+    end
 }
 
 local __configuration = {
     type = '__configuration',
     new = function(self, class)
         self.__index = self
-        return setmetatable({ __class = class }, self)
+        return setmetatable({
+            __class = class
+        }, self)
     end,
     extends = function(self, other)
         local fields = self.__class.__fields
@@ -43,7 +45,7 @@ local __configuration = {
         end
         local type_ = self.__class.type
         local statics = self.__class.__statics
-        local error = "Static field '"..type_.."."..name.."' already defined!"
+        local error = "Static field '" .. type_ .. "." .. name .. "' already defined!"
         assert(not statics[name], error)
         rawset(statics, name, value)
     end,
@@ -53,21 +55,21 @@ local __configuration = {
         end
         local type_ = self.__class.type
         local fields = self.__class.__fields
-        local error = "Field or method '"..type_.."."..name.."' already defined!"
+        local error = "Field or method '" .. type_ .. "." .. name .. "' already defined!"
         assert(not fields[name], error)
         rawset(fields, name, default)
     end,
     method = function(self, name, callable)
         local type_ = self.__class.type
-        local error = "Signature '"..type_.."."..name.."' is not a 'function' type!"
+        local error = "Signature '" .. type_ .. "." .. name .. "' is not a 'function' type!"
         assert(type(callable) == 'function', error)
         self:field(name, callable)
-    end,
+    end
 }
 
 return {
     class = function(name, definition)
-        assert(not _G[name], "Class '"..name.."' already defined!")
+        assert(not _G[name], "Class '" .. name .. "' already defined!")
         local klass = __class:__define(name)
         local configuration = __configuration:new(klass)
         if definition then
@@ -75,5 +77,5 @@ return {
         end
         _G[name] = klass
         return klass
-    end,
+    end
 }
