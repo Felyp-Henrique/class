@@ -1,4 +1,4 @@
-local __class = {
+local Class = {
     __index = function(table_, index)
         local statics = rawget(table_, '__statics')
         if statics and statics[index] then
@@ -24,7 +24,7 @@ local __class = {
     end
 }
 
-local __configuration = {
+local Configuration = {
     type = '__configuration',
     new = function(self, class)
         self.__index = self
@@ -33,7 +33,9 @@ local __configuration = {
         }, self)
     end,
     extends = function(self, other)
-        local fields = self.__class.__fields
+        if type(other) == 'string' then
+            other = _G[other]
+        end
         for field, value in pairs(other.__fields or {}) do
             self:field(field, value)
         end
@@ -67,14 +69,20 @@ local __configuration = {
 }
 
 return {
-    class = function(name, definition)
-        assert(not _G[name], "Class '" .. name .. "' already defined!")
-        local klass = __class:new(name)
-        local configuration = __configuration:new(klass)
-        if definition then
-            definition(configuration)
+    class = function(...)
+        local signature, configure = ...
+        local class = Class:new(signature)
+        local configuration = Configuration:new(class)
+        if type(signature) == 'function' then
+            signature(configuration)
+            assert(class.type, "Needs define type name!")
+        elseif type(signature) == 'string' then
+            if configure then
+                configure(configuration)
+            end
+            assert(class.type, "Needs define type name!")
+            _G[signature] = class
         end
-        _G[name] = klass
-        return klass
+        return class
     end
 }

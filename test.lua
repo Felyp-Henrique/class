@@ -3,49 +3,93 @@ class = require('class').class
 _ENV = require('external.lunity')()
 
 function test:before()
-    _G['People'] = nil
-    _G['Service'] = nil
+    _G['ObjectType'] = nil
+    _G['ObjectTypeTwo'] = nil
 end
 
-function test:create_class_and_instantiate_it()
-    local People = class('People')
-    assertTrue(People.type == "People")
-    local object = People:new()
-    assertTrue(object.type == "People")
+function test:automatic_create_class_and_use_it()
+    assertDoesNotError(class, 'ObjectType')
+    local object = ObjectType:new()
+    assertTrue(object.type == 'ObjectType')
 end
 
-function test:define_static_values_and_read_it()
-    local url = 'https://github.com/Felyp-Henrique'
-    local Service = class('Service', function(c)
-        c:static('url', url)
+function test:automatic_create_fields_and_use_it()
+    assertDoesNotError(class, 'ObjectType', function(c)
+        c:field('fieldOne', 'default value 1')
+        c:field('fieldTwo', 'default value 2')
     end)
-    assertTrue(Service.url == url)
+    local object = ObjectType:new()
+    assertNotNil(object.fieldOne)
+    assertNotNil(object.fieldTwo)
 end
 
-function test:define_two_different_classes()
-    local People = class('People', function(c)
-        c:static('race', 'Human')
-
-        c:field('name', 'Alexa')
-        c:field('year', 18)
+function test:automatic_create_static_and_use_it()
+    assertDoesNotError(class, 'ObjectType', function(c)
+        c:static('staticField', 'default value')
+        c:static('staticMethod', function() return 'default return' end)
     end)
-    local Service = class('Service', function(c)
-        c:static('protocol', 'tcp')
+    -- check if static fields exists
+    assertType(ObjectType.staticField, 'string')
+    assertType(ObjectType.staticMethod, 'function')
+    -- check if static fields is correct
+    assertEqual(ObjectType.staticField, 'default value')
+    assertEqual(ObjectType.staticMethod(), 'default return')
+    -- check if instance not have static fields
+    local object = ObjectType:new()
+    assertNil(object.staticField)
+    assertNil(object.staticMethod)
+end
 
-        c:field('host', 'localhost')
-        c:field('port', 8080)
+function test:automatic_create_method_and_use_it()
+    assertDoesNotError(class, 'ObjectType', function(c)
+        c:method('methodOne', function(self)
+            return 'method one'
+        end)
+
+        c:method('methodTwo', function(self)
+            return 'method two'
+        end)
     end)
-    -- check if statics is valids
-    assertTrue(People.race == 'Human' and People.protocol == nil)
-    assertTrue(Service.protocol == 'tcp' and Service.race == nil)
-    local people = People:new()
-    local service = Service:new()
-    -- check if fields is valids
-    assertTrue(people.name == 'Alexa' and people.year == 18)
-    assertTrue(service.host == "localhost" and service.port == 8080)
-    -- check if fields is not valids
-    assertTrue(people.host == nil and people.port == nil)
-    assertTrue(service.name == nil and service.year == nil)
+    local object = ObjectType:new()
+    assertEqual(object:methodOne(), 'method one')
+    assertEqual(object:methodTwo(), 'method two')
+end
+
+function test:automatic_do_inheritance_and_use_it()
+    assertDoesNotError(class, 'ObjectType', function(c)
+        c:field('fieldBase', 'field base')
+
+        c:method('methodBase', function(self)
+            return 'method base'
+        end)
+    end)
+    assertDoesNotError(class, 'ObjectTypeTwo', function(c)
+        c:extends(ObjectType)
+
+        c:field('fieldNew', 'field new')
+
+        c:method('methodNew', function(self)
+            return 'method new'
+        end)
+    end)
+    local object = ObjectType:new()
+    local objectTwo = ObjectTypeTwo:new()
+    -- check if all field/methods was inherited
+    assertNotNil(objectTwo.fieldBase)
+    assertNotNil(objectTwo.methodBase)
+    assertNotNil(objectTwo.fieldNew)
+    assertNotNil(objectTwo.methodNew)
+    -- check if base class not have field/methods of children
+    assertNil(object.fieldNew)
+    assertNil(object.methodNew)
+    -- check if value are different when change field data
+    objectTwo.fieldBase = "change default value inherited"
+    assertNotEqual(object.fieldBase, objectTwo.fieldBase)
+end
+
+
+function test:simple_do_error_when_undefined_type()
+    assertErrors(class, function(c) end)
 end
 
 test()
