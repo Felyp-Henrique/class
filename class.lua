@@ -6,22 +6,21 @@ local __class = {
         end
         return nil
     end,
-    __define = function(self, name)
+    new = function(self, name)
         assert(name, "Needs define name of Class")
         return setmetatable({
             type = name,
-            new = self.new
-        }, self)
-    end,
-    new = function(self, obj)
-        obj = obj or {}
-        obj.type = self.type
-        for field, value in pairs(self.__fields or {}) do
-            if not obj[field] then
-                obj[field] = value
+            new = function(self, obj)
+                obj = obj or {}
+                obj.type = self.type
+                for field, value in pairs(self.__fields or {}) do
+                    if not obj[field] then
+                        obj[field] = value
+                    end
+                end
+                return obj
             end
-        end
-        return obj
+        }, self)
     end
 }
 
@@ -70,7 +69,7 @@ local __configuration = {
 return {
     class = function(name, definition)
         assert(not _G[name], "Class '" .. name .. "' already defined!")
-        local klass = __class:__define(name)
+        local klass = __class:new(name)
         local configuration = __configuration:new(klass)
         if definition then
             definition(configuration)
