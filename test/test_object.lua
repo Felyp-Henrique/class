@@ -16,6 +16,10 @@ end
 function test:test_create_instance_of_object()
     assertDoesNotError(Object.new, Object)
     local object = Object:new()
+    assertNotNil(object.getType)
+    assertNotNil(object.getBases)
+    assertNil(object.__statics)
+    assertNil(object.__fields)
 end
 
 test()

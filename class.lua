@@ -21,6 +21,28 @@ do
         class.__fields = class.__fields or {};
         class.__fields[signature] = default;
     end
+    _type.toClass = function(self, class, constructor)
+        class.__index = function(table_, index)
+            local statics = rawget(table_, '__statics')
+            if statics and statics[index] then
+                return rawget(statics, index)
+            end
+            return nil
+        end
+        class.new = function(self, ...)
+            local instance = {}
+            instance.getType = self.__statics.getType
+            instance.getBases = self.__statics.getBases
+            for field, default in pairs(self.__fields) do
+                instance[field] = default
+            end
+            if constructor ~= nil then
+                constructor(instance, ...)
+            end
+            return instance
+        end
+        return setmetatable(class, class)
+    end
     Type = _type
 end
 
@@ -66,29 +88,37 @@ do
             return result
         end
     }
-    _object.__index = function(table_, index)
-        local statics = rawget(table_, '__statics')
-        if statics and statics[index] then
-            return rawget(statics, index)
-        end
-        return nil
-    end
-    _object.new = function(self, ...)
-        local instance = {}
-        instance.getType = self.__statics.getType
-        instance.getBases = self.__statics.getBases
-        for field, default in pairs(self.__fields) do
-            instance[field] = default
-        end
-        return instance
-    end
-    Object = setmetatable(_object, _object)
+    Object = Type:toClass(_object)
 end
 
 local ClassFactory
 do
     local _factory = {}
+    _factory.simple = function(self, signature, definition)
+        local class = {}
+        local bases = {Object, table.unpack(definition.extends or {})}
+        local statics = definition.statics or {}
+        local fields = definition.fields or {}
+        Type:extend(class, table.unpack(bases))
+        for static, value in pairs(statics) do
+            Type:static(class, static, value)
+        end
+        local constructor = nil
+        for field, value in pairs(fields) do
+            if field == 'constructor' then
+                constructor = value
+            end
+            if field ~= 'statics' then
+                Type:field(class, field, value)
+            end
+        end
+        return Type:toClass(class, constructor)
+    end
     ClassFactory = _factory
+end
+
+local function class(signature, definition)
+    return ClassFactory:simple(signature, definition)
 end
 
 return {
