@@ -66,9 +66,7 @@ do
             return object
         end,
         equals = function(self, other)
-            if not other.getType then
-                return false
-            elseif other:getType() ~= self:getType() then
+            if not other or not other.getType or other:getType() ~= self:getType() then
                 return false
             end
             for self_field, self_value in pairs(self) do
@@ -83,7 +81,7 @@ do
         toString = function(self)
             local result = self:getType() .. " "
             for field, value in pairs(self) do
-                result = result .. field .. ":" .. value .. " "
+                result = result .. field .. ":" .. tostring(value) .. " "
             end
             return result
         end
