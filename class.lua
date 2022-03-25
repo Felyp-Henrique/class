@@ -99,10 +99,10 @@ do
         local bases = {Object, table.unpack(definition.extends or {})}
         local statics = definition.statics or {}
         local fields = definition.fields or {}
-        bases.getType = function()
+        statics.getType = function()
             return signature
         end
-        bases.getBases = function()
+        statics.getBases = function()
             return bases
         end
         Type:extend(class, table.unpack(bases))
