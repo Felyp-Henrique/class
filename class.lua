@@ -99,13 +99,13 @@ do
         local bases = {Object, table.unpack(definition.extends or {})}
         local statics = definition.statics or {}
         local fields = definition.fields or {}
+        Type:extend(class, table.unpack(bases))
         statics.getType = function()
             return signature
         end
         statics.getBases = function()
             return bases
         end
-        Type:extend(class, table.unpack(bases))
         for static, value in pairs(statics) do
             Type:static(class, static, value)
         end
