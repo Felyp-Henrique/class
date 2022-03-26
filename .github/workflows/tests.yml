@@ -1,4 +1,4 @@
-name: '[on push] execute tests'
+name: 'Automatic Test'
 on: push
 jobs:
   test:
