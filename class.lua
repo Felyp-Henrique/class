@@ -125,5 +125,6 @@ end
 return {
     Type = Type,
     Object = Object,
-    ClassFactory = ClassFactory
+    ClassFactory = ClassFactory,
+    class = class
 }

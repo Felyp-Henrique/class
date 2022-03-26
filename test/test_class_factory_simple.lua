@@ -134,4 +134,6 @@ function test:test_inherit_class()
     assertFalse(people:equals(employee))
 end
 
-test()
+if not test() then
+    os.exit(1)
+end

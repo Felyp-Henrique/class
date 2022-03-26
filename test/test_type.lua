@@ -38,4 +38,6 @@ function test:test_create_type_with_fields()
     assertEqual(AnyClassDefinition.__fields.AnyField, "AnyValue")
 end
 
-test()
+if not test() then
+    os.exit(1)
+end

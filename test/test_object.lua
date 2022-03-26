@@ -77,4 +77,6 @@ function test:test_tostring_method_of_object()
     assertEqual(object:toString(), '<Object>')
 end
 
-test()
+if not test() then
+    os.exit(1)
+end
