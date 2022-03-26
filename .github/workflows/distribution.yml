@@ -27,4 +27,4 @@ jobs:
       - run: python ./tools/distribution.py
       - uses: actions/download-artifact@v2
         with:
-          path: class.zip
+          name: class.zip
