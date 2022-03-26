@@ -1,4 +1,4 @@
-name: 'On Push - Execute Tests'
+name: '[on push]- execute tests'
 on: push
 jobs:
   test:
