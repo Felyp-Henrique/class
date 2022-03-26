@@ -94,7 +94,6 @@ do
         local class = {}
         local bases = {Object, table.unpack(definition.extends or {})}
         local statics = definition.statics or {}
-        local fields = definition.fields or {}
         Type:extend(class, table.unpack(bases))
         statics.getType = function()
             return signature
@@ -106,7 +105,7 @@ do
             Type:static(class, static, value)
         end
         local constructor = nil
-        for field, value in pairs(fields) do
+        for field, value in pairs(definition) do
             if field == 'constructor' then
                 constructor = value
             end
