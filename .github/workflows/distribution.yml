@@ -26,6 +26,7 @@ jobs:
           python-version: '3.9'
           architecture: 'x64'
       - run: python ./tools/distribution.py
+      - run: ls -l
       - uses: actions/download-artifact@v3
         with:
           name: class.zip
