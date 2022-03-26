@@ -11,5 +11,5 @@ jobs:
           architecture: 'x64'
       - uses: leafo/gh-actions-lua@v5
         with:
-          luaVersion: "5.4.4"
+          luaVersion: "5.1"
       - run: python ./tools/test.py
