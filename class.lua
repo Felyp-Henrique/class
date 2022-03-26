@@ -90,6 +90,7 @@ local ClassFactory
 do
     local _factory = {}
     _factory.simple = function(self, signature, definition)
+        definition = definition or {}
         local class = {}
         local bases = {Object, table.unpack(definition.extends or {})}
         local statics = definition.statics or {}
@@ -124,5 +125,6 @@ end
 
 return {
     Type = Type,
-    Object = Object
+    Object = Object,
+    ClassFactory = ClassFactory
 }
