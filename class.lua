@@ -66,24 +66,21 @@ do
             return object
         end,
         equals = function(self, other)
-            if not other or not other.getType or other:getType() ~= self:getType() then
+            if not other or not other.getType then
                 return false
             end
-            for self_field, self_value in pairs(self) do
-                for other_field, other_value in pairs(other) do
-                    if (self_field ~= 'getType' and other_field ~= 'getType') and (self_value ~= other_value) then
-                        return false
-                    end
+            if other:getType() ~= self:getType() or #other ~= #self then
+                return false
+            end
+            for field, self_value in pairs(self) do
+                if type(self_value) ~= 'function' and other[field] ~= self_value then
+                    return false
                 end
             end
             return true
         end,
         toString = function(self)
-            local result = self:getType() .. " "
-            for field, value in pairs(self) do
-                result = result .. field .. ":" .. tostring(value) .. " "
-            end
-            return result
+            return string.format("<%s>", self:getType())
         end
     }
     Object = Type:toClass(_object)

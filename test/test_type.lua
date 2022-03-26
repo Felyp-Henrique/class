@@ -1,8 +1,7 @@
-_ENV = require('external.lunity')(
-    "test the base creation type with Type"
-)
+_ENV = require('external.lunity')("test the base creation type with Type")
 
 Type = require("class").Type
+
 
 function test:test_create_type_and_extend_other()
     local AnyGenericClass = {
