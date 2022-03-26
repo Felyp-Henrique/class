@@ -9,7 +9,7 @@ jobs:
         with:
           python-version: '3.9'
           architecture: 'x64'
-      - uses: leafo/gh-actions-lua@v5
+      - uses: leafo/gh-actions-lua@v9
         with:
-          luaVersion: "5.1"
+          luaVersion: "5.4"
       - run: python ./tools/test.py
