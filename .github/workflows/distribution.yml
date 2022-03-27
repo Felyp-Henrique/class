@@ -21,12 +21,13 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@master
-      - uses: actions/setup-python@v3
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
         with:
-          python-version: '3.9'
-          architecture: 'x64'
-      - run: python ./tools/distribution.py
-      - run: ls -l
+          name: class
+          path: |
+            class.lua
+            LICENSE.md
       - uses: actions/download-artifact@v3
         with:
           name: class.zip
