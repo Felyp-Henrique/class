@@ -28,6 +28,4 @@ jobs:
           path: |
             class.lua
             LICENSE.md
-      - uses: actions/download-artifact@v3
-        with:
-          name: class.zip
+      - uses: actions/download-artifact@v2
