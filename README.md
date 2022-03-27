@@ -9,7 +9,7 @@ The library **class.lua** is done to do support the **Object Oriented Programmin
 
 - [x] Class definition support
 - [x] Inheritance support
-- [x] **super** support
+- [x] **Override** and **super** support
 - [x] Statics members support
 - [x] Root class Object like _Java Object_ and _Python object_ type
 - [x] Basics methods in Object like **clone**, **equals** and **toString**
