@@ -14,8 +14,9 @@ The library **class.lua** is done to do support the **Object Oriented Programmin
 - [x] Root class Object like _Java Object_ and _Python object_ type
 - [x] Basics methods in Object like **clone**, **equals** and **toString**
 - [x] Type validators and inheritance checking
-- [ ] Abstracts classes
-- [ ] Interfaces
+- [ ] Private members like python
+- [ ] Abstracts classes support
+- [ ] Interfaces support
 
 ## Documentation and Examples
 
