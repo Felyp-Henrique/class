@@ -21,6 +21,23 @@ do
         class.__fields = class.__fields or {};
         class.__fields[signature] = default;
     end
+    _type.super = function(self, object)
+        return setmetatable({}, {
+            __index = function(_, index)
+                local class = _G[object.getType()]
+                local method = nil
+                for _, base in ipairs(class.getBases()) do
+                    method = base.__fields[index]
+                    if method then
+                        return function(...)
+                            return method(object, ...)
+                        end
+                    end
+                end
+                return nil
+            end
+        })
+    end
     _type.toClass = function(self, class, constructor)
         class.__index = function(table_, index)
             local statics = rawget(table_, '__statics')
@@ -118,6 +135,10 @@ do
     ClassFactory = _factory
 end
 
+local function super(object)
+    return Type:super(object)
+end
+
 local function class(signature, definition)
     return ClassFactory:simple(signature, definition)
 end
@@ -126,5 +147,6 @@ return {
     Type = Type,
     Object = Object,
     ClassFactory = ClassFactory,
-    class = class
+    class = class,
+    super = super
 }
