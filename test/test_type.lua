@@ -38,6 +38,32 @@ function test:test_create_type_with_fields()
     assertEqual(AnyClassDefinition.__fields.AnyField, "AnyValue")
 end
 
+function test:test_super_keyword()
+    local AnyGenericClass = {
+        __fields = {
+            getMessage = function(self)
+                return "I am people"
+            end
+        }
+    }
+    local AnySpecializedClass = Type:toClass({
+        __fields = {
+            getMessage = function(self)
+                return  Type:super(self).getMessage() .. " and I am customer"
+            end
+        },
+        __statics = {
+            getType = function()
+                return 'AnySpecializedClass'
+            end,
+            getBases = function()
+                return {AnyGenericClass}
+            end
+        }
+    })
+    assertEqual(AnySpecializedClass:new():getMessage(), "I am people and I am customer")
+end
+
 if not test() then
     os.exit(1)
 end

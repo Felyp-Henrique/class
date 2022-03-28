@@ -24,11 +24,11 @@ do
     _type.super = function(self, object)
         return setmetatable({}, {
             __index = function(_, index)
-                local class = _G[object.getType()]
                 local method = nil
-                for _, base in ipairs(class.getBases()) do
+                -- find method in superclass list
+                for _, base in ipairs(object.getBases()) do
                     method = base.__fields[index]
-                    if method then
+                    if method and type(method) == 'function' then
                         return function(...)
                             return method(object, ...)
                         end
@@ -50,7 +50,7 @@ do
             local instance = {}
             instance.getType = self.__statics.getType
             instance.getBases = self.__statics.getBases
-            for field, default in pairs(self.__fields) do
+            for field, default in pairs(self.__fields or {}) do
                 instance[field] = default
             end
             if constructor ~= nil then
