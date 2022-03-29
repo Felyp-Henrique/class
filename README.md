@@ -22,6 +22,26 @@ The library **class.lua** is done to do support the **Object Oriented Programmin
 
 Coming soon
 
+```lua
+class = require('class').class
+
+Point = class('Point', {
+    statics = {
+        BEGIN_X = 0,
+        BEGIN_Y = 0
+    },
+    constructor = function(self, x, y)
+        self.x = x
+        self.y = y
+    end,
+    getDistance = function(self, point)
+        return math.sqrt((point.x - self.x) ^ 2 + (point.y - self.y) ^ 2)
+    end
+})
+
+local point = Point:new(200, 200)
+```
+
 ## Alternatives
 
 Some alternatives:
