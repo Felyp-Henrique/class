@@ -27,8 +27,8 @@ class = require('class').class
 
 Point = class('Point', {
     statics = {
-        BEGIN_X = 0,
-        BEGIN_Y = 0
+        DEFAULT_X = 0,
+        DEFAULT_Y = 0
     },
     constructor = function(self, x, y)
         self.x = x
@@ -40,8 +40,8 @@ Point = class('Point', {
 })
 
 local point = Point:new(
-    Point.BEGIN_X,
-    Point.BEGIN_y
+    Point.DEFAULT_X,
+    Point.DEFAULT_y
 )
 ```
 
