@@ -46,4 +46,6 @@ function test:test_super_keyword_in_constructors()
     assertEqual(customer:getMessage('hello world'), 'josh: hello world')
 end
 
-test()
+if not test() then
+    os.exit(1)
+end
