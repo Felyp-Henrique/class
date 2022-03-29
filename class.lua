@@ -25,6 +25,25 @@ do
         return setmetatable({}, {
             __index = function(_, index)
                 local method = nil
+                -- find constructors
+                if index == 'constructor' then
+                    local constructors = {}
+                    for _, base in ipairs(object.getBases()) do
+                        if base[index] ~= nil then
+                            if method == nil then
+                                method = base[index]
+                            end
+                            table.insert(constructors, base[index])
+                        end
+                    end
+                    if #constructors > 1 then
+                        error('Multiple inheritance conflict!')
+                        return nil
+                    end
+                    return function(...)
+                        return method(object, ...)
+                    end
+                end
                 -- find method in superclass list
                 for _, base in ipairs(object.getBases()) do
                     method = base.__fields[index]
@@ -38,7 +57,7 @@ do
             end
         })
     end
-    _type.toClass = function(self, class, constructor)
+    _type.toClass = function(self, class)
         class.__index = function(table_, index)
             local statics = rawget(table_, '__statics')
             if statics and statics[index] then
@@ -53,8 +72,8 @@ do
             for field, default in pairs(self.__fields or {}) do
                 instance[field] = default
             end
-            if constructor ~= nil then
-                constructor(instance, ...)
+            if class.constructor ~= nil then
+                class.constructor(instance, ...)
             end
             return instance
         end
@@ -112,6 +131,13 @@ do
         local bases = {Object, table.unpack(definition.extends or {})}
         local statics = definition.statics or {}
         Type:extend(class, table.unpack(bases))
+        for field, value in pairs(definition) do
+            if field == 'constructor' then
+                statics.constructor = value
+            elseif field ~= 'statics' then
+                Type:field(class, field, value)
+            end
+        end
         statics.getType = function()
             return signature
         end
@@ -121,16 +147,7 @@ do
         for static, value in pairs(statics) do
             Type:static(class, static, value)
         end
-        local constructor = nil
-        for field, value in pairs(definition) do
-            if field == 'constructor' then
-                constructor = value
-            end
-            if field ~= 'statics' then
-                Type:field(class, field, value)
-            end
-        end
-        return Type:toClass(class, constructor)
+        return Type:toClass(class)
     end
     ClassFactory = _factory
 end
