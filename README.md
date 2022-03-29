@@ -31,8 +31,8 @@ Point = class('Point', {
         BEGIN_Y = 0
     },
     constructor = function(self, x, y)
-        self.x = x
-        self.y = y
+        self.x = x or Point.BEGIN_X
+        self.y = y or Point.BEGIN_Y
     end,
     getDistance = function(self, point)
         return math.sqrt((point.x - self.x) ^ 2 + (point.y - self.y) ^ 2)
