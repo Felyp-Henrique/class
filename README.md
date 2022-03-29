@@ -5,7 +5,7 @@
 
 The library **class.lua** is done to do support the **Object Oriented Programming** inspired in _Java_ and _Python_.
 
-The purpose this library is help you to model your software and game better using the similar __OOP__ of __Java__ and __Python__. The features more dominant this library can remind you of __Python__.
+The purpose this library is help you to model your software and game better using the similar _OOP_ of _Java_ and _Python_. The features more dominant this library can remind you of _Python_.
 
 ## Some features
 
