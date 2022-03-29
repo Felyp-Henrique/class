@@ -41,7 +41,7 @@ Point = class('Point', {
 
 local point = Point:new(
     Point.DEFAULT_X,
-    Point.DEFAULT_y
+    Point.DEFAULT_Y
 )
 ```
 
