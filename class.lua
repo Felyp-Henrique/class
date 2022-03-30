@@ -85,40 +85,36 @@ end
 local Object
 do
     local _object = {}
-    _object.__statics = {
-        getType = function()
-            return "Object"
-        end,
-        getBases = function()
-            return {}
+    Type:static(_object, 'getType', function()
+        return "Object"
+    end)
+    Type:static(_object, 'getBases', function()
+        return {}
+    end)
+    Type:field(_object, 'clone', function(self)
+        local object = {}
+        for field, default in pairs(self) do
+            object[field] = default
         end
-    }
-    _object.__fields = {
-        clone = function(self)
-            local object = {}
-            for field, default in pairs(self) do
-                object[field] = default
-            end
-            return object
-        end,
-        equals = function(self, other)
-            if not other or not other.getType then
+        return object
+    end)
+    Type:field(_object, 'equals', function(self, other)
+        if not other or not other.getType then
+            return false
+        end
+        if other:getType() ~= self:getType() or #other ~= #self then
+            return false
+        end
+        for field, self_value in pairs(self) do
+            if type(self_value) ~= 'function' and other[field] ~= self_value then
                 return false
             end
-            if other:getType() ~= self:getType() or #other ~= #self then
-                return false
-            end
-            for field, self_value in pairs(self) do
-                if type(self_value) ~= 'function' and other[field] ~= self_value then
-                    return false
-                end
-            end
-            return true
-        end,
-        toString = function(self)
-            return string.format("<%s>", self:getType())
         end
-    }
+        return true
+    end)
+    Type:field(_object, 'toString', function(self)
+        return string.format("<%s>", self:getType())
+    end)
     Object = Type:toClass(_object)
 end
 
@@ -149,6 +145,13 @@ do
         end
         return Type:toClass(class)
     end
+    _factory.global = function(self, signature, definition)
+        if _G[signature] ~= nil then
+            error('Class already defined!')
+        end
+        _G[signature] = self:simple(signature, definition)
+        return _G[signature]
+    end
     ClassFactory = _factory
 end
 
@@ -160,10 +163,15 @@ local function class(signature, definition)
     return ClassFactory:simple(signature, definition)
 end
 
+local function gclass(signature, definition)
+    return ClassFactory:global(signature, definition)
+end
+
 return {
     Type = Type,
     Object = Object,
     ClassFactory = ClassFactory,
     class = class,
+    gclass = gclass,
     super = super
 }
