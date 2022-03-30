@@ -1,6 +1,6 @@
 # Lua Class
 
-**This library doesn't have a stable version yet.***
+**This library doesn't have a stable version yet.**
 
 ![Tests](https://github.com/Felyp-Henrique/class/actions/workflows/tests.yml/badge.svg)
 ![Distribution](https://github.com/Felyp-Henrique/class/actions/workflows/distribution.yml/badge.svg)
