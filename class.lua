@@ -77,6 +77,7 @@ do
             end
             return instance
         end
+        class.__call = class.new
         return setmetatable(class, class)
     end
     Type = _type

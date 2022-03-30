@@ -45,7 +45,32 @@ Point = class('Point', {
     end
 })
 
-local point = Point:new(
+local point = Point:new( -- you can omit the new method and use Point(...)
+    Point.DEFAULT_X,
+    Point.DEFAULT_Y
+)
+```
+
+... or you can do it different:
+
+```lua
+gclass = require('class').gclass
+
+gclass('Point', {
+    statics = {
+        DEFAULT_X = 0,
+        DEFAULT_Y = 0
+    },
+    constructor = function(self, x, y)
+        self.x = x
+        self.y = y
+    end,
+    getDistance = function(self, point)
+        return math.sqrt((point.x - self.x) ^ 2 + (point.y - self.y) ^ 2)
+    end
+})
+
+local point = Point:new( -- you can omit the new method and use Point(...)
     Point.DEFAULT_X,
     Point.DEFAULT_Y
 )
