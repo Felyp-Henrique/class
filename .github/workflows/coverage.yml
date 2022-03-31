@@ -3,3 +3,13 @@ on: [push, pull_request]
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - uses: leafo/gh-actions-lua@v9
+        with:
+          luaVersion: "5.4"
+      - run: python ./tools/test.py
