@@ -2,7 +2,7 @@ local object
 do
   local _object = {}
   _object.__index = _object
-  _object.to_string = function(self)
+  _object.to_string = function (self)
     return tostring(self)
   end
   _object.clone = function (self)
@@ -42,13 +42,13 @@ end
 
 local class
 do
-  local _class = function(detail)
+  local _class = function (detail)
     local class = {}
     class.__index = class
     -- class configuration
     detail = detail or {}
     detail.extends = {object, table.unpack(detail.extends or {})}
-    detail.new = detail.new or function(self)
+    detail.new = detail.new or function (self)
     end
     -- class inheritance
     for _, base in ipairs(detail.extends) do
@@ -89,15 +89,15 @@ end
 
 local super
 do
-  local _super = function(instance, superclass)
+  local _super = function (instance, superclass)
     return setmetatable({}, {
-      __index = function(_, field)
+      __index = function (_, field)
         -- find constructor in instance
         if field == 'new' then
           if superclass == nil then
             error('superclass is nil in super(self, superclass)')
           end
-          return function(...)
+          return function (...)
             return superclass.__new(instance, ...)
           end
         end
@@ -109,7 +109,7 @@ do
         for _, base in ipairs(instance.__extends) do
           local method = rawget(base, field)
           if type(method) == 'function' then
-            return function(...)
+            return function (...)
               return method(instance, ...)
             end
           end
