@@ -1,105 +1,86 @@
-local extends
-do
-  local _extends
-  _extends = function(target, src)
-    for field, value in pairs(src) do
-      if field == 'extends' then
-        for _, subclass in ipairs(value) do
-          _extends(target, subclass)
-        end
-      elseif field == '__bases' then
-        for _, base in ipairs(value) do
-          table.insert(target.__bases, base)
-        end
-      elseif field ~= 'init' and field ~= '__index' then
-        target[field] = value
-      end
-    end
-  end
-  extends = _extends
-end
-
 local object
 do
-  local _object
-  _object = {}
-  _object.__bases = {}
+  local _object = {}
+  _object.__index = _object
   _object.to_string = function(self)
     return tostring(self)
   end
-  _object.clone = function(self)
+  _object.clone = function (self)
     local other = {}
     other.__index = other
     for field, value in pairs(self) do
-      if field ~= 'init' and field ~= '__index' then
+      if field ~= "__index" then
         other[field] = value
       end
     end
-    return setmetatable(other, other)
+    return setmetatable(other, self)
   end
-  _object.equals = function(self, other)
-    local is_equals = true
-    -- first check if self is equals to other
+  _object.equals = function (self, other)
     for field, value in pairs(self) do
-      if type(value) ~= 'function' then
+      if field ~= "__index" then
         if other[field] ~= value then
-          is_equals = false
+          return false
         end
       end
     end
-    -- second check if other is equals to self
     for field, value in pairs(other) do
-      if type(value) ~= 'function' then
+      if field ~= "__index" then
         if other[field] ~= value then
-          is_equals = false
+          return false
         end
       end
     end
-    return is_equals
+    return true
   end
-  _object.__index = _object
+  _object.new = function (self, args)
+    local instance = args or {}
+    instance.__index = instance
+    return setmetatable(instance, self)
+  end
   object = setmetatable(_object, _object)
 end
 
 local class
 do
-  local _class
-  _class = function(definition)
-    local meta = definition or {}
+  local _class = function(detail)
     local class = {}
     class.__index = class
-    -- all class inherit from object
-    meta.extends = meta.extends or {}
-    table.insert(meta.extends, object)
-    class.__bases = meta.extends
-    -- it's the constructor
-    function class:__call(...)
-      local args = {...}
-      local object = setmetatable({}, self)
-      object.__index = object
-      for field, value in pairs(meta) do
-        if field == "init" then
-          value(object, table.unpack(args or {}))
-        else
-          object[field] = value
+    -- class configuration
+    detail = detail or {}
+    detail.extends = {object, table.unpack(detail.extends or {})}
+    detail.new = detail.new or function(self)
+    end
+    -- class inheritance
+    for _, base in ipairs(detail.extends) do
+      for field, value in pairs(base) do
+        if field ~= "__index" and field ~= 'new' then
+          class[field] = value
         end
       end
-      return object
     end
-    -- do inheritance
-    for _, subclass in pairs(meta.extends or {}) do
-      extends(class, subclass)
-    end
-    -- it's the rest of class
-    for field, value in pairs(meta) do
-      -- it's the inheritance action
-      if field == 'extends' then
-        for subfield, subvalue in pairs(value) do
-          class[subfield] = subvalue
-        end
-      else
+    -- class fields
+    for field, value in pairs(detail) do
+      if field ~= "extends" and field ~= "new" and field ~= '__index' then
         class[field] = value
       end
+    end
+    class.__new = detail.new
+    -- class basics methods
+    class.new = function (self, ...)
+      local instance = {}
+      instance.__index = instance
+      instance.__extends = detail.extends
+      -- copy methods from base classe
+      for field, value in pairs(self) do
+        if field ~= "__index" and field ~= 'new' then
+          instance[field] = value
+        end
+      end
+      -- run constructor
+      if detail.new then
+        detail.new(instance, ...)
+      end
+      return setmetatable(instance, self)
     end
     return setmetatable(class, class)
   end
@@ -108,45 +89,40 @@ end
 
 local super
 do
-  local _super
-  _super = function(object)
+  local _super = function(instance, superclass)
     return setmetatable({}, {
       __index = function(_, field)
-        for _, base in ipairs(object.__bases or {}) do
-          -- can't call constructors
-          if base[field] and field ~= 'init' then
-            error("Can't call constructor in super, use 'class.init(self, ...)' instead")
-            return nil
+        -- find constructor in instance
+        if field == 'new' then
+          if superclass == nil then
+            error('superclass is nil in super(self, superclass)')
           end
-          -- call method from base class
-          if base[field] and type(base[field]) == 'function' then
+          return function(...)
+            return superclass.__new(instance, ...)
+          end
+        end
+        -- check instance
+        if instance == nil then
+          error('instance is nil in super(self)')
+        end
+        -- find method in instance
+        for _, base in ipairs(instance.__extends) do
+          local method = rawget(base, field)
+          if type(method) == 'function' then
             return function(...)
-              return base[field](object, ...)
+              return method(instance, ...)
             end
           end
         end
-        return nil
+        return rawget(instance, field)
       end,
     })
   end
   super = _super
 end
 
-Pessoa = class {
-  init = function(self, nome, idade)
-    self.nome = nome or ""
-    self.idade = idade or 0
-  end
+return {
+  object = object,
+  class = class,
+  super = super,
 }
-
-Funcionario = class {
-  extends = { Pessoa },
-  init = function(self, nome, idade, salary)
-    Pessoa.init(self, nome, idade)
-    self.salary = salary or 0
-  end
-}
-
-local funcionario = Funcionario("Joao", 30, 900.0)
-
-print(funcionario.nome, funcionario.idade, funcionario.salary)
