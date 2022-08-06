@@ -93,6 +93,7 @@ do
   object = setmetatable(_object, _object)
 end
 
+
 --- class
 --
 -- It's a function class, used to define a new class.
@@ -147,6 +148,7 @@ do
   class = _class
 end
 
+
 --- super
 --
 -- It's a function used to call a method from a base class.
@@ -185,9 +187,14 @@ do
   super = _super
 end
 
-return {
+
+local expose = {
   object = object,
   class = class,
   super = super,
   __identifier = identifier, -- expose to test
 }
+
+for field, value in pairs(expose) do
+  _G[field] = value
+end

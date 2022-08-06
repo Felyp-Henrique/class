@@ -1,14 +1,11 @@
 _ENV = require('external.lunity')()
 
-object = require('class').object
-class = require('class').class
-super = require('class').super
-identifier = require('class').__identifier
-
+require 'class'
 
 function test:before()
-  identifier.__id = -1
+  __identifier.__id = -1
 end
+
 
 --
 -- Identifier Tests
@@ -16,28 +13,28 @@ end
 
 -- Test the identifier class has a metatable.
 function test:test_identifier_has_metatable()
-  assertNotNil(identifier.__index)
-  assertNotNil(getmetatable(identifier))
+  assertNotNil(__identifier.__index)
+  assertNotNil(getmetatable(__identifier))
 end
 
 -- The identifier object always init with id -1.
 function test:identifier_init()
-  assertEqual(identifier.__id, -1)
+  assertEqual(__identifier.__id, -1)
 end
 
 -- The identifier object increment the id by 1 each time it is called the next_id.
 function test:identifier_next_id_increment()
-  local old = identifier.__id
-  local new = identifier:next_id()
+  local old = __identifier.__id
+  local new = __identifier:next_id()
   assertNotEqual(new, old)
 end
 
 -- The identifier object method's next_id return the same id incremented by 1.
 function test:identifier_next_id_incremented()
-  local old = identifier.__id
-  local new = identifier:next_id()
-  assertEqual(old, identifier.__id - 1)
-  assertEqual(new, identifier.__id)
+  local old = __identifier.__id
+  local new = __identifier:next_id()
+  assertEqual(old, __identifier.__id - 1)
+  assertEqual(new, __identifier.__id)
 end
 
 

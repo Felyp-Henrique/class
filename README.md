@@ -14,7 +14,7 @@ This library is a simple implementation for OOP in Lua. It's inspired by the Jav
 * [x] It's has **super** keywords.
 
 ```lua
-class = require("class")
+require 'class'
 
 Point = class {
   BEGIN_X = 0,
