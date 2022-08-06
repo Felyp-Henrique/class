@@ -1,12 +1,7 @@
-seed = math.ceil(os.clock() ^ 5) * 100
-
-print(seed)
-
-math.randomseed(os.clock())
 
 local function __id()
   local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  return string.random(10 - 1) .. charset:sub(math.random(1, #charset), 1)
+  return 0
 end
 
 local object
