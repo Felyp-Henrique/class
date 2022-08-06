@@ -1,13 +1,19 @@
-
-local function __id()
-  local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  return 0
+local identifier
+do
+  local _identifier = {}
+  _identifier.__index = _identifier
+  _identifier.__id = -1
+  _identifier.next_id = function (self)
+    self.__id = self.__id + 1
+    return self.__id
+  end
+  identifier = setmetatable(_identifier, _identifier)
 end
 
 local object
 do
   local _object = {}
-  _object.__id = __id()
+  _object.__id = identifier:next_id()
   _object.__index = _object
   _object.to_string = function (self)
     return tostring(self)
@@ -61,7 +67,7 @@ local class
 do
   local _class = function (detail)
     local class = {}
-    class.__id = __id()
+    class.__id = identifier:next_id()
     class.__index = class
     -- class configuration
     detail = detail or {}
@@ -71,7 +77,7 @@ do
     -- class inheritance
     for _, base in ipairs(detail.extends) do
       for field, value in pairs(base) do
-        if field ~= "__index" and field ~= 'new' then
+        if field ~= "__index" and field ~= 'new' and field ~= '__id' then
           class[field] = value
         end
       end
@@ -138,12 +144,6 @@ do
   end
   super = _super
 end
-
-Pessoa = class()
-Funcionario = class()
-
-print(Pessoa.__id)
-print(Funcionario.__id)
 
 return {
   object = object,
