@@ -1,3 +1,18 @@
+--
+-- class.lua
+--
+-- Copyright (c) 2022, Felyp Henrique
+--
+-- This module is free software; you can redistribute it and/or modify it under
+-- the terms of the Apache license. See LICENSE for details.
+--
+
+
+--- identifier
+--
+-- It is a object used to identify the class when compare instance about objects
+-- or equality.
+--
 local identifier
 do
   local _identifier = {}
@@ -10,6 +25,11 @@ do
   identifier = setmetatable(_identifier, _identifier)
 end
 
+
+--- object
+--
+-- It's a class object. This is the base class of all classes.
+--
 local object
 do
   local _object = {}
@@ -46,29 +66,33 @@ do
     return true
   end
   _object.instanceof = function (self, other)
-    local fields = {}
-    for self_field, _ in pairs(self) do
-      fields[self_field] = true
+    for _, base in ipairs(self.__extends or {}) do
+      if other.__id == base.__id or self.__id == other.__id then
+        return true
+      end
     end
-
     return false
   end
   _object.new = function (self, args)
     local instance = args or {}
     instance.__index = instance
-    instance.__extends = { _object }
+    instance.__extends = {}
     return setmetatable(instance, self)
   end
   _object.__new = _object.new
   object = setmetatable(_object, _object)
 end
 
+--- class
+--
+-- It's a function class, used to define a new class.
+--
+-- @param detail table (optional) 
+--
 local class
 do
   local _class = function (detail)
     local class = {}
-    class.__id = identifier:next_id()
-    class.__index = class
     -- class configuration
     detail = detail or {}
     detail.extends = {object, table.unpack(detail.extends or {})}
@@ -93,7 +117,6 @@ do
     class.new = function (self, ...)
       local instance = {}
       instance.__index = instance
-      instance.__extends = detail.extends
       -- copy methods from base classe
       for field, value in pairs(self) do
         if field ~= "__index" and field ~= 'new' then
@@ -106,11 +129,18 @@ do
       end
       return setmetatable(instance, self)
     end
+    class.__id = identifier:next_id()
+    class.__index = class
+    class.__extends = detail.extends
     return setmetatable(class, class)
   end
   class = _class
 end
 
+--- super
+--
+-- It's a function used to call a method from a base class.
+--
 local super
 do
   local _super = function (instance, superclass)
