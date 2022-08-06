@@ -1,6 +1,18 @@
+seed = math.ceil(os.clock() ^ 5) * 100
+
+print(seed)
+
+math.randomseed(os.clock())
+
+local function __id()
+  local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+  return string.random(10 - 1) .. charset:sub(math.random(1, #charset), 1)
+end
+
 local object
 do
   local _object = {}
+  _object.__id = __id()
   _object.__index = _object
   _object.to_string = function (self)
     return tostring(self)
@@ -32,11 +44,21 @@ do
     end
     return true
   end
+  _object.instanceof = function (self, other)
+    local fields = {}
+    for self_field, _ in pairs(self) do
+      fields[self_field] = true
+    end
+
+    return false
+  end
   _object.new = function (self, args)
     local instance = args or {}
     instance.__index = instance
+    instance.__extends = { _object }
     return setmetatable(instance, self)
   end
+  _object.__new = _object.new
   object = setmetatable(_object, _object)
 end
 
@@ -44,6 +66,7 @@ local class
 do
   local _class = function (detail)
     local class = {}
+    class.__id = __id()
     class.__index = class
     -- class configuration
     detail = detail or {}
@@ -120,6 +143,12 @@ do
   end
   super = _super
 end
+
+Pessoa = class()
+Funcionario = class()
+
+print(Pessoa.__id)
+print(Funcionario.__id)
 
 return {
   object = object,
