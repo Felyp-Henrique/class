@@ -50,14 +50,20 @@ do
   end
   _object.equals = function (self, other)
     for field, value in pairs(self) do
-      if field ~= "__index" then
+      if field ~= "__index"
+          and field ~= 'new'
+          and field ~= '__new'
+          and field ~= '__extends' then
         if other[field] ~= value then
           return false
         end
       end
     end
     for field, value in pairs(other) do
-      if field ~= "__index" then
+      if field ~= "__index"
+          and field ~= 'new'
+          and field ~= '__new'
+          and field ~= '__extends' then
         if other[field] ~= value then
           return false
         end
@@ -66,8 +72,11 @@ do
     return true
   end
   _object.instanceof = function (self, other)
+    if other.__id == object.__id then
+      return true
+    end
     for _, base in ipairs(self.__extends or {}) do
-      if other.__id == base.__id or self.__id == other.__id then
+      if other.__id == base.__id and base.__id ~= object.__id then
         return true
       end
     end
@@ -76,10 +85,11 @@ do
   _object.new = function (self, args)
     local instance = args or {}
     instance.__index = instance
-    instance.__extends = {}
+    instance.__extends = { _object }
     return setmetatable(instance, self)
   end
   _object.__new = _object.new
+  _object.__extends = { _object }
   object = setmetatable(_object, _object)
 end
 
@@ -179,4 +189,5 @@ return {
   object = object,
   class = class,
   super = super,
+  __identifier = identifier, -- expose to test
 }

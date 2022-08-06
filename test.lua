@@ -3,106 +3,195 @@ _ENV = require('external.lunity')()
 object = require('class').object
 class = require('class').class
 super = require('class').super
+identifier = require('class').__identifier
 
-function test.object_new()
-  local obj = object:new()
-  assertNotNil(obj)
+
+function test:before()
+  identifier.__id = -1
 end
 
-function test.object_to_string()
-  local obj = object:new()
-  assertNotNil(obj:to_string())
+--
+-- Identifier Tests
+--
+
+-- Test the identifier class has a metatable.
+function test:test_identifier_has_metatable()
+  assertNotNil(identifier.__index)
+  assertNotNil(getmetatable(identifier))
 end
 
-function test.object_clone()
-  local obj = object:new { x = 200, y = 400 }
-  local clone = obj:clone()
-  assertEqual(clone.x, 200)
-  assertEqual(clone.y, 400)
-  assertEqual(clone.x, obj.x)
-  assertEqual(clone.y, obj.y)
-  assertNotEqual(clone, obj)
+-- The identifier object always init with id -1.
+function test:identifier_init()
+  assertEqual(identifier.__id, -1)
 end
 
-function test.object_equals()
-  local obj1 = object:new { x = 10, y = 20 }
-  local obj2 = object:new { x = 12, y = 20 }
-  local obj3 = object:new { x = 10, y = 20 }
-  assertEqual(obj1:equals(obj2), false)
-  assertEqual(obj2:equals(obj1), false)
-  assertEqual(obj2:equals(obj3), false)
-  assertEqual(obj3:equals(obj2), false)
-  assertEqual(obj1:equals(obj3), true)
+-- The identifier object increment the id by 1 each time it is called the next_id.
+function test:identifier_next_id_increment()
+  local old = identifier.__id
+  local new = identifier:next_id()
+  assertNotEqual(new, old)
 end
 
-function test.class()
-  local Point = class {
-    new = function (self, x, y)
-      self.x = x or 0
-      self.y = y or 0
-    end,
-    area = function (self)
-      return self.x * self.y
+-- The identifier object method's next_id return the same id incremented by 1.
+function test:identifier_next_id_incremented()
+  local old = identifier.__id
+  local new = identifier:next_id()
+  assertEqual(old, identifier.__id - 1)
+  assertEqual(new, identifier.__id)
+end
+
+
+--
+-- Object Tests
+--
+
+-- The object class has a metatable.
+function test:test_object_has_metatable()
+  assertNotNil(object.__index)
+  assertNotNil(getmetatable(object))
+end
+
+-- The object class has the __id field as 0.
+function test:object_id_zero()
+  assertEqual(object.__id, 0)
+end
+
+-- The object class has contains the basics methods and fields.
+function test:object_basics_methods_and_fields()
+  assertNotNil(object.new)
+  assertNotNil(object.to_string)
+  assertNotNil(object.clone)
+  assertNotNil(object.equals)
+  assertNotNil(object.instanceof)
+  assertNotNil(object.__new)
+  assertNotNil(object.__id)
+  assertNotNil(object.__index)
+end
+
+-- The object class make new different instance when use new method.
+function test:object_instance_new()
+  local instance = object:new()
+  assertNotNil(instance)
+  assertNotEqual(instance, object)
+  assertEqual(instance.__id, object.__id)
+  assertNotNil(instance.new)
+  assertNotNil(instance.to_string)
+  assertNotNil(instance.clone)
+  assertNotNil(instance.equals)
+  assertNotNil(instance.instanceof)
+  assertNotNil(instance.__new)
+  assertNotNil(instance.__id)
+  assertNotNil(instance.__index)
+  assertNotNil(instance.__extends)
+end
+
+-- The object class make new different instance when use __new method.
+function test:object_instance___new()
+  local instance = object:__new()
+  assertNotNil(instance)
+  assertNotEqual(instance, object)
+  assertEqual(instance.__id, object.__id)
+  assertNotNil(instance.new)
+  assertNotNil(instance.to_string)
+  assertNotNil(instance.clone)
+  assertNotNil(instance.equals)
+  assertNotNil(instance.instanceof)
+  assertNotNil(instance.__new)
+  assertNotNil(instance.__id)
+  assertNotNil(instance.__index)
+  assertNotNil(instance.__extends)
+end
+
+-- The object class make new different instance when use new method with args.
+function test:object_instance_new_with_args()
+  local instance = object:new({ x = 345, y = 678 })
+  assertNotNil(instance)
+  assertNotEqual(instance, object)
+  assertNotNil(instance.x)
+  assertNotNil(instance.y)
+  assertEqual(instance.x, 345)
+  assertEqual(instance.y, 678)
+end
+
+-- The object class not share attrs between instances when instantiate two objects.
+function test:object_two_different_instances()
+  local instance1 = object:new({ x = 1 })
+  local instance2 = object:new({ y = 1 })
+  local has = false
+  assertNotEqual(instance1, instance2)
+  for field, _ in pairs(instance1) do
+    if field == 'y' then
+      has = true
     end
-  }
-
-  local point = Point:new(10, 20)
-
-  assertEqual(point.x, 10)
-  assertEqual(point.y, 20)
-  assertEqual(point:area(), 200)
-
-  local Zoom = class {
-    extends = { Point },
-    new = function (self, x, y, z)
-      self.x = x or 0
-      self.y = y or 0
-      self.z = z or 1
-    end,
-    zoom = function (self)
-      return self:area() * self.z
-    end,
-    to_string = function (self)
-      return tostring(self:zoom())
+  end
+  assertFalse(has)
+  has = false
+  for field, _ in pairs(instance2) do
+    if field == 'x' then
+      has = true
     end
-  }
-
-  local zoom = Zoom:new(10, 20, 2)
-
-  assertEqual(zoom.x, 10)
-  assertEqual(zoom.y, 20)
-  assertEqual(zoom:area(), 200)
-  assertEqual(zoom:zoom(), 400)
-
-  assertNotEqual(zoom, point)
-  assertNotEqual(point, point:clone())
-  assertNotEqual(zoom, zoom:clone())
-
-  assertEqual(zoom:to_string(), '400')
+  end
+  assertFalse(has)
 end
 
-function test.super()
-  local Point = class {
-    new = function (self, x, y)
-      self.x = x or 0
-      self.y = y or 0
-    end,
-    area = function (self)
-      return self.x * self.y
-    end
-  }
-  local Zoom = class {
-    extends = { Point },
-    new = function (self, x, y, z)
-      super(self, Point).new(x, y)
-      self.z = z or 1
-    end,
-    area = function (self)
-      return super(self):area() * self.z
-    end
-  }
-  local p = Zoom:new(10, 20, 2)
-  assertEqual(p:area(), 400)
+-- The object class clone a new object with same attrs values.
+function test:object_clone()
+  local instance = object:new { any = 'value' }
+  local clone = instance:clone()
+  assertNotEqual(instance, clone)
+  assertEqual(instance.any, clone.any)
+  assertEqual(instance.__id, clone.__id)
+  assertEqual(instance.any, 'value')
+  assertEqual(clone.any, 'value')
 end
 
-test()
+-- The object class instanceof works :D
+function test:object_instanceof()
+  local instance = object:new()
+  assertTrue(instance:instanceof(object))
+  assertFalse(instance:instanceof({}))
+end
+
+-- The objects needs be equals.
+function test:object_is_equals()
+  local instance1 = object:new({ x = 20, y = 30 })
+  local instance2 = object:new({ x = 20, y = 30 })
+  local instance3 = object:new({ x = 80, y = 340 })
+  local instance4 = instance3:clone()
+  assertTrue(instance1:equals(instance2))
+  assertTrue(instance3:equals(instance4))
+end
+
+-- The objects needs not be equals.
+function test:object_is_not_equals()
+  local instance1 = object:new({ x = 20, y = 30 })
+  local instance2 = object:new({ x = 80, y = 340 })
+  local instance3 = instance2:clone()
+  instance3.x = 20
+  assertFalse(instance1:equals(instance2))
+  assertFalse(instance1:equals(instance3))
+end
+
+-- The object to string needs be like lua's tostring method.
+function test:object_to_string()
+  local instance = object:new({ x = 20, y = 30 })
+  local str = tostring(instance)
+  assertEqual(str, instance:to_string())
+end
+
+--
+-- Class Tests
+--
+
+-- TODO
+
+--
+-- Super Tests
+--
+
+-- TODO
+
+-- stderr as 1 when error
+if not test() then
+  os.exit(1)
+end

@@ -1,6 +1,6 @@
 # Lua Class
 
-**This library there is not a stable version.**
+**This library there is not a stable version yet.**
 
 ![Distribution](https://github.com/Felyp-Henrique/class/actions/workflows/distribution.yml/badge.svg)
 
