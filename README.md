@@ -39,7 +39,6 @@ local p2 = Point.create_with_x(100)
 
 print(p1:distance(p2)) -- 460.97722286464
 ```
-```
 
 ## Alternatives
 
