@@ -1,9 +1,10 @@
 _ENV = require('external.lunity')()
 
-require 'class'
-
 function test:before()
-  __identifier.__id = -1
+  if __identifier then
+    __identifier.__id = -1
+  end
+  require('class') -- reload object.__id
 end
 
 
@@ -176,17 +177,248 @@ function test:object_to_string()
   assertEqual(str, instance:to_string())
 end
 
+
 --
 -- Class Tests
 --
 
--- TODO
+-- The class can create a class empty.
+function test:class_empty()
+  local any = class()
+  assertNotNil(any)
+  assertNotNil(any.__id)
+  assertNotNil(any.__index)
+  assertNotNil(any.__extends)
+  assertNotNil(any.__new)
+  assertNotNil(any.new)
+  assertNotNil(any.to_string)
+  assertNotNil(any.clone)
+  assertNotNil(any.equals)
+  assertNotNil(any.instanceof)
+  assertNotNil(any:new())
+  assertEqual(any.__id, 0)
+end
+
+-- The class create a new metatable.
+function test:class_create_metatable()
+  local any = class()
+  assertNotNil(any.__index)
+  assertNotNil(getmetatable(any))
+end
+
+-- The class create different tables in the memory.
+function test:class_create_diferrent_tables()
+  local any = class()
+  local another = class()
+  assertNotEqual(any, another)
+end
+
+-- The class constructor needs to work.
+function test:class_constructor_needs_to_work()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end
+  }
+  local p1 = Point:new(10, 20)
+  assertNotNil(p1)
+  assertNotNil(p1.x)
+  assertNotNil(p1.y)
+  assertEqual(p1.x, 10)
+  assertEqual(p1.y, 20)
+  local p2 = Point:new()
+  assertNotNil(p2)
+  assertNotNil(p2.x)
+  assertNotNil(p2.y)
+  assertEqual(p2.x, 0)
+  assertEqual(p2.y, 0)
+end
+
+-- The class needs be inherited.
+function test:class_is_inherited()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end,
+    distance = function (self, other)
+      return math.sqrt((self.x - other.x)^2 + (self.y - other.y)^2)
+    end,
+  }
+  local Square = class {
+    extends = { Point },
+    new = function (self, x, y, w, h)
+      self.x = x or 0
+      self.y = y or 0
+      self.w = w or 0
+      self.h = h or 0
+    end,
+  }
+  local square = Square:new(10, 20, 30, 40)
+  assertNotNil(square)
+  assertNotNil(square.distance)
+  assertEqual(square.x, 10)
+  assertEqual(square.y, 20)
+  assertEqual(square.w, 30)
+  assertEqual(square.h, 40)
+  assertEqual(square:distance(square:clone()), 0)
+end
+
+-- The class needs be inherited more than one class.
+function test:class_is_inherited_more_than_one_class()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end,
+    distance = function (self, other)
+      return math.sqrt((self.x - other.x)^2 + (self.y - other.y)^2)
+    end,
+  }
+  local Graphic = class {
+    draw = function (self)
+      return 'drawing'
+    end,
+  }
+  local Square = class {
+    extends = { Point, Graphic, },
+    new = function (self, x, y, w, h)
+      self.x = x or 0
+      self.y = y or 0
+      self.w = w or 0
+      self.h = h or 0
+    end,
+  }
+  local square = Square:new(10, 20, 30, 40)
+  local other = Square:new(20, 30, 40, 50)
+  assertNotNil(square)
+  assertNotNil(square.distance)
+  assertNotNil(square.draw)
+  assertEqual(square.x, 10)
+  assertEqual(square.y, 20)
+  assertEqual(square.w, 30)
+  assertEqual(square.h, 40)
+  assertEqual(square:distance(square:clone()), 0)
+  assertEqual(square:draw(), 'drawing')
+end
+
+-- The object class clone a new object with same attrs values.
+function test:class_object_instance_clone()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end
+  }
+  local instance = Point:new(770, 230)
+  local clone = instance:clone()
+  assertNotEqual(instance, clone)
+  assertEqual(instance.x, clone.x)
+  assertEqual(instance.y, clone.y)
+  assertEqual(instance.__id, clone.__id)
+  assertEqual(instance.x, 770)
+  assertEqual(instance.y, 230)
+  assertEqual(clone.x, 770)
+  assertEqual(clone.y, 230)
+end
+
+-- The object class instanceof works :D
+function test:class_object_instance_instanceof()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end
+  }
+  local Any = class()
+  local Inherited = class({ extends = { Point }})
+  local instance = Point:new(89, 58)
+  local other = Inherited:new()
+  assertTrue(instance:instanceof(object))
+  assertTrue(instance:instanceof(Point))
+  assertFalse(instance:instanceof(Any))
+  assertFalse(instance:instanceof({}))
+  assertTrue(other:instanceof(object))
+  assertTrue(other:instanceof(Point))
+  assertTrue(other:instanceof(Inherited))
+  assertFalse(other:instanceof(Any))
+  assertFalse(other:instanceof({}))
+end
+
+-- The objects needs be equals.
+function test:class_object_instance_is_equals()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end
+  }
+  local instance1 = Point:new(770, 230)
+  local instance2 = Point:new(770, 230)
+  local instance3 = Point:new(680, 230)
+  local instance4 = instance3:clone()
+  assertTrue(instance1:equals(instance2))
+  assertTrue(instance3:equals(instance4))
+end
+
+-- The objects needs not be equals.
+function test:class_object_instance_is_not_equals()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end
+  }
+  local instance1 = Point:new(770, 230)
+  local instance2 = Point:new(580, 230)
+  local instance3 = instance2:clone()
+  instance3.x = 20
+  assertFalse(instance1:equals(instance2))
+  assertFalse(instance1:equals(instance3))
+end
+
+-- The object to string needs be like lua's tostring method.
+function test:class_object_instance_to_string()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end,
+    to_string = function (self)
+      return '{ "x": ' .. self.x  .. ', "y": ' .. self.y .. ' }'
+    end
+  }
+  local instance = Point:new(20, 20)
+  local str = '{ "x": 20, "y": 20 }'
+  assertEqual(str, instance:to_string())
+end
+
+-- Test the static fields and methods.
+function test:class_statics()
+  local Point = class {
+    BEGIN_X = -99,
+    BEGIN_Y = -99,
+    distance = function (x1, y1, x2, y2)
+      return math.sqrt((x1 - x2)^2 + (y1 - y2)^2)
+    end,
+  }
+  local instance = Point:new()
+  assertEqual(instance.BEGIN_X, -99)
+  assertEqual(instance.BEGIN_Y, -99)
+  assertEqual(Point.BEGIN_X, -99)
+  assertEqual(Point.BEGIN_Y, -99)
+  assertEqual(type(Point.distance(50, 35, 604, 990)), 'number')
+  assertEqual(type(instance.distance(20, 430, 760, 670)), 'number')
+end
+
 
 --
 -- Super Tests
 --
 
 -- TODO
+
 
 -- stderr as 1 when error
 if not test() then

@@ -72,6 +72,9 @@ do
     return true
   end
   _object.instanceof = function (self, other)
+    if self.__id == other.__id then
+      return true
+    end
     if other.__id == object.__id then
       return true
     end
