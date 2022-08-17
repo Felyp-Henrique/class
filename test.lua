@@ -417,8 +417,55 @@ end
 -- Super Tests
 --
 
--- TODO
+-- The super needs call the parent's constructor.
+function test:super_call_parent_constructor()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end,
+  }
+  local Square = class {
+    extends = { Point, },
+    new = function (self, x, y, w, h)
+      super(self, Point).new(x, y)
+      self.w = w or 0
+      self.h = h or 0
+    end,
+  }
+  local square = Square:new(10, 20, 30, 40)
+  assertEqual(square.x, 10)
+  assertEqual(square.y, 20)
+  assertEqual(square.w, 30)
+  assertEqual(square.h, 40)
+end
 
+-- The super needs call the parent's method.
+function test:super_call_parent_method()
+  local Point = class {
+    new = function (self, x, y)
+      self.x = x or 0
+      self.y = y or 0
+    end,
+    distance = function (self, other)
+      return math.sqrt((self.x - other.x)^2 + (self.y - other.y)^2)
+    end,
+  }
+  local Square = class {
+    extends = { Point, },
+    new = function (self, x, y, w, h)
+      super(self, Point).new(x, y)
+      self.w = w or 0
+      self.h = h or 0
+    end,
+    distance = function (self, other)
+      return super(self).distance(other) * -1
+    end,
+  }
+  local point = Point:new(10, 20)
+  local square = Square:new(10, 20, 40, 50)
+  assertEqual(square:distance(point), -point:distance(square))
+end
 
 -- stderr as 1 when error
 if not test() then
