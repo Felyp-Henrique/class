@@ -1,7 +1,5 @@
 # Lua Class
 
-**This library there is not a stable version yet.**
-
 ![Distribution](https://github.com/Felyp-Henrique/class/actions/workflows/distribution.yml/badge.svg)
 
 This library is a simple implementation for OOP in Lua. It's inspired by the Java and Python. It's works with classes, inheritance and polymorphism.
